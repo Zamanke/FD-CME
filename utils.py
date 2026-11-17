@@ -142,12 +142,12 @@ class Learner(struct.PyTreeNode):
     #general EBM base class used for KSD methods
 
     @abc.abstractmethod
-    def sample(self, n: Integer, theta: Array, rng_key: Array) -> Array:
+    def sample(self, n: int, theta: Array, rng_key: Array) -> Array:
         #generate random sample from the distribution
         raise NotImplementedError
 
     @abc.abstractmethod
-    def log_prob(self, theta: Array, x: Array) -> Float:
+    def log_prob(self, theta: Array, x: Array) -> Scalar:
         #return the log-probability of x given the parameter value is theta
         raise NotImplementedError
 
