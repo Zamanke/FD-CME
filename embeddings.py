@@ -67,8 +67,8 @@ def compute_EIF_a0(A_tr:Array,
         p_m_a0x_array=jnp.array(m_ax.predict_proba(np.concatenate((np.array(a0_vec),np.array(X_te)),axis=1)))
     
     if explicit_m and not explicit_y:
-        K_M1=A_kernel.make_distance_matrix(M_tr,jnp.array([[1.]]))
-        K_M0=A_kernel.make_distance_matrix(M_tr,jnp.array([[0.]]))
+        K_M1=M_kernel.make_distance_matrix(M_tr,jnp.array([[1.]]))
+        K_M0=M_kernel.make_distance_matrix(M_tr,jnp.array([[0.]]))
 
     
     
@@ -220,8 +220,8 @@ def compute_plugin_a0(A_tr:Array,
         p_m_a0x_array=jnp.array(m_ax.predict_proba(np.concatenate((np.array(a0_vec),np.array(X_tr)),axis=1)))
     
     if explicit_m:
-        K_M1=A_kernel.make_distance_matrix(M_tr,jnp.array([[1.]]))
-        K_M0=A_kernel.make_distance_matrix(M_tr,jnp.array([[0.]]))
+        K_M1=M_kernel.make_distance_matrix(M_tr,jnp.array([[1.]]))
+        K_M0=M_kernel.make_distance_matrix(M_tr,jnp.array([[0.]]))
         
     #a_mx = estimate_propensity(np.array(A_tr),np.concatenate((np.array(X_tr),np.array(M_tr)),axis=1))
     
