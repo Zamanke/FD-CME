@@ -1,0 +1,9 @@
+{
+  "max_observation_weight_error": 1.0207112932647533e-14,
+  "max_squared_mmd_error": 3.5041414214731503e-16,
+  "kernel_grid_max_error": 2.9559688030644793e-15,
+  "kernel_grid_max_distance": 20,
+  "target_cross_grid_max_error": 7.077671781985373e-16,
+  "target_norm_error": 1.1102230246251565e-16,
+  "parameter_sets_checked": 2
+}

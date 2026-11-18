@@ -1,0 +1,80 @@
+{
+  "rows": [
+    {
+      "n": 250,
+      "repetitions": 2000,
+      "empty_cell_failures": 66,
+      "plugin_rmse": 0.04654280621801906,
+      "one_step_rmse": 0.05818306158339565,
+      "plugin_scaled": 0.7359063817239381,
+      "one_step_scaled": 0.9199549792268656
+    },
+    {
+      "n": 500,
+      "repetitions": 2000,
+      "empty_cell_failures": 2,
+      "plugin_rmse": 0.03266564978722821,
+      "one_step_rmse": 0.0351769491583039,
+      "plugin_scaled": 0.7304261345344383,
+      "one_step_scaled": 0.7865804955902153
+    },
+    {
+      "n": 1000,
+      "repetitions": 2000,
+      "empty_cell_failures": 0,
+      "plugin_rmse": 0.022778154985775463,
+      "one_step_rmse": 0.0230814343442758,
+      "plugin_scaled": 0.7203085065137074,
+      "one_step_scaled": 0.7298990419154655
+    },
+    {
+      "n": 2000,
+      "repetitions": 2000,
+      "empty_cell_failures": 0,
+      "plugin_rmse": 0.015540229116361845,
+      "one_step_rmse": 0.016095144371540054,
+      "plugin_scaled": 0.6949801738021315,
+      "one_step_scaled": 0.7197967384487339
+    },
+    {
+      "n": 4000,
+      "repetitions": 2000,
+      "empty_cell_failures": 0,
+      "plugin_rmse": 0.011337059975746976,
+      "one_step_rmse": 0.011249548746603695,
+      "plugin_scaled": 0.7170186298658746,
+      "one_step_scaled": 0.7114839337672011
+    },
+    {
+      "n": 8000,
+      "repetitions": 2000,
+      "empty_cell_failures": 0,
+      "plugin_rmse": 0.008133340974131417,
+      "one_step_rmse": 0.007984947930342781,
+      "plugin_scaled": 0.7274681320936883,
+      "one_step_scaled": 0.7141954547617086
+    },
+    {
+      "n": 16000,
+      "repetitions": 2000,
+      "empty_cell_failures": 0,
+      "plugin_rmse": 0.005659204830789586,
+      "one_step_rmse": 0.005596635782526523,
+      "plugin_scaled": 0.7158390804289152,
+      "one_step_scaled": 0.707924652287304
+    },
+    {
+      "n": 32000,
+      "repetitions": 2000,
+      "empty_cell_failures": 0,
+      "plugin_rmse": 0.003990216459587584,
+      "one_step_rmse": 0.003984722364002018,
+      "plugin_scaled": 0.7137916198861104,
+      "one_step_scaled": 0.7128088061897739
+    }
+  ],
+  "slopes": {
+    "plugin_rmse": -0.4976198852877243,
+    "one_step_rmse": -0.5067829231330386
+  }
+}

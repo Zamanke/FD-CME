@@ -1,0 +1,29 @@
+[
+  {
+    "n": 250,
+    "seeds": 8,
+    "empty_cell_failures": 1,
+    "plugin_rmse": 0.05310604836769082,
+    "one_step_rmse": 0.09713811214743795,
+    "plugin_scaled": 0.8396803518648505,
+    "one_step_scaled": 1.5358884099738686
+  },
+  {
+    "n": 500,
+    "seeds": 8,
+    "empty_cell_failures": 0,
+    "plugin_rmse": 0.03260250856871749,
+    "one_step_rmse": 0.041864843337324244,
+    "plugin_scaled": 0.7290142539667169,
+    "one_step_scaled": 0.9361263556963617
+  },
+  {
+    "n": 1000,
+    "seeds": 8,
+    "empty_cell_failures": 0,
+    "plugin_rmse": 0.022727909192063286,
+    "one_step_rmse": 0.025113231332940477,
+    "plugin_scaled": 0.7187195950039729,
+    "one_step_scaled": 0.7941501041879824
+  }
+]
