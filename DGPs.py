@@ -170,7 +170,7 @@ def DGP_high_dim_M(n: int,
         A=jax.random.binomial(key_a,1,prob_matrix)
 
 
-    mean=jnp.concatenate((5*A*jnp.pow(X,2)+3*k*A,3*X,2*k*A*X),axis=1)
+    mean=jnp.concatenate((5*k*A*jnp.pow(X,2)+3*k*A,3*X,2*k*A*X),axis=1)
 
     M=jax.random.multivariate_normal(key_m,mean,cov,shape=n)
 
@@ -207,7 +207,7 @@ def DGP_high_dim_MX(n: int,
         prob_matrix=jnp.pow(jnp.ones((n,1))+jnp.exp(logit_matrix),-1)
         A=jax.random.binomial(key_a,1,prob_matrix)
 
-    mean=5*A*jnp.pow(X,2)+3*k*A+3*X+2*k*A*X
+    mean=5*k*A*jnp.pow(X,2)+3*k*A+3*X+2*k*A*X
 
     M=jax.random.multivariate_normal(key_m,mean,cov,shape=n)
 
@@ -249,7 +249,7 @@ def DGP_high_dim_Y(n: int,
         prob_matrix=jnp.pow(jnp.ones((n,1))+jnp.exp(logit_matrix),-1)
         A=jax.random.binomial(key_a,1,prob_matrix)
 
-    mean=5*A*jnp.pow(X,2)+3*k*A+3*X+2*k*A*X
+    mean=5*k*A*jnp.pow(X,2)+3*k*A+3*X+2*k*A*X
 
     M=jnp.sign(X[:,0]).reshape(-1,1)*jax.random.multivariate_normal(key_m,mean,cov,shape=n)
 
