@@ -61,17 +61,7 @@ def compute_EIF_a0(A_tr:Array,
     #learn propensity and density ratio functions
     a_x =estimate_propensity(np.array(A_tr),np.array(X_tr),method=x_method)
     a_mx = estimate_propensity(np.array(A_tr),np.concatenate((np.array(X_tr),np.array(M_tr)),axis=1),method=mx_method)
-    if explicit_m or explicit_y:
-        m_ax = estimate_propensity(np.array(M_tr),np.concatenate((np.array(A_tr),np.array(X_tr)),axis=1),method=mx_method)
-        a0_vec=a0*jnp.ones(A_te.shape)
-        p_m_a0x_array=jnp.array(m_ax.predict_proba(np.concatenate((np.array(a0_vec),np.array(X_te)),axis=1)))
-    
-    if explicit_m and not explicit_y:
-        K_M1=M_kernel.make_distance_matrix(M_tr,jnp.array([[1.]]))
-        K_M0=M_kernel.make_distance_matrix(M_tr,jnp.array([[0.]]))
 
-    
-    
     K_A1=A_kernel.make_distance_matrix(A_tr,jnp.array([[1.]]))
     K_A0=A_kernel.make_distance_matrix(A_tr,jnp.array([[0.]]))
     K_Aa0=A_kernel.make_distance_matrix(A_tr,a0*jnp.ones(A_te.shape))
@@ -108,26 +98,16 @@ def compute_EIF_a0(A_tr:Array,
     K_Api=jnp.outer(K_A1,p_a_x_array[:,1])+jnp.outer(K_A0,p_a_x_array[:,0])
     #K_Api=K_AA@np.linalg.inv(K_XX+n_tr*lambda_a*np.eye(n_tr))@K_Xx
 
-    K_AA_XX=jnp.multiply(K_AA,K_XX)
-    K_AA_MM_XX=jnp.multiply(K_AA_XX,K_MM)
-    R1=jnp.linalg.inv(K_AA_MM_XX+lambda_y*jnp.eye(n_tr))
-    if explicit_m and not explicit_y:
-        mu_m_a0x=jnp.outer(K_M1,p_m_a0x_array[:,1])+jnp.outer(K_M0,p_m_a0x_array[:,0])
-    else:
-        mu_m_a0x=K_MM@jnp.linalg.inv(K_AA_XX+lambda_m*jnp.eye(n_tr))@jnp.multiply(K_Aa0,K_Xx)
-    K_Mm_Xx=jnp.multiply(K_Xx,K_Mm)
-    
-    
     if explicit_y:
+        m_ax = estimate_propensity(np.array(M_tr),np.concatenate((np.array(A_tr),np.array(X_tr)),axis=1),method=mx_method)
+        a0_vec=a0*jnp.ones(A_te.shape)
+        p_m_a0x_array=jnp.array(m_ax.predict_proba(np.concatenate((np.array(a0_vec),np.array(X_te)),axis=1)))
+
         embedder=mu_y_amx()
         embedder.train(jnp.concatenate((A_tr,M_tr,X_tr),axis=1))
         first_term_mat=jnp.multiply(dr_mat,embedder.predict(jnp.concatenate((A_te,M_te,X_te),axis=1)))
-    else:
-        first_term_mat=R1@jnp.multiply(dr_mat,jnp.multiply(K_Aa,K_Mm_Xx))
-        
-    first_term_v2=1/n_te * first_term_mat.sum(axis=1).reshape(-1,1)
+        first_term=1/n_te * first_term_mat.sum(axis=1).reshape(-1,1)
 
-    if explicit_y:
         mu_y_1mx=embedder.predict(jnp.concatenate((jnp.ones(A_te.shape),M_te,X_te),axis=1))
         mu_y_0mx=embedder.predict(jnp.concatenate((jnp.zeros(A_te.shape),M_te,X_te),axis=1))
 
@@ -154,19 +134,60 @@ def compute_EIF_a0(A_tr:Array,
                           jnp.multiply(mu_y_00x,jnp.multiply(p_0_a0x_mat,p_0_x_mat)))
         
         second_term_mat = jnp.multiply(p_a0_x_reciprocal_mat,(mu_y_mu_a-mu_y_mu_a_mu_m))
+        second_term=1/n_te * second_term_mat.sum(axis=1).reshape(-1,1)
 
-    else:
-        second_term_mat = R1@(jnp.multiply(p_a0_x_reciprocal_mat,(jnp.multiply(K_Api,K_Mm_Xx)-jnp.multiply(jnp.multiply(K_Api,mu_m_a0x),K_Xx))))
-    second_term_v2=1/n_te * second_term_mat.sum(axis=1).reshape(-1,1)
-
-    if explicit_y:
         third_term_mat=mu_y_mu_m
+        third_term=1/n_te * third_term_mat.sum(axis=1).reshape(-1,1)
+
+        EIF_estimate=second_term+third_term-first_term
+
+    elif explicit_m:
+        m_ax = estimate_propensity(np.array(M_tr),np.concatenate((np.array(A_tr),np.array(X_tr)),axis=1),method=mx_method)
+        a0_vec=a0*jnp.ones(A_te.shape)
+        p_m_a0x_array=jnp.array(m_ax.predict_proba(np.concatenate((np.array(a0_vec),np.array(X_te)),axis=1)))
+
+        K_M1=M_kernel.make_distance_matrix(M_tr,jnp.array([[1.]]))
+        K_M0=M_kernel.make_distance_matrix(M_tr,jnp.array([[0.]]))
+
+        mu_m_a0x=jnp.outer(K_M1,p_m_a0x_array[:,1])+jnp.outer(K_M0,p_m_a0x_array[:,0])
         
+        K_AA_XX=jnp.multiply(K_AA,K_XX)
+        K_AA_MM_XX=jnp.multiply(K_AA_XX,K_MM)
+        #R1=jnp.linalg.inv(K_AA_MM_XX+lambda_y*jnp.eye(n_tr))
+        
+        K_Mm_Xx=jnp.multiply(K_Xx,K_Mm)
+        first_term_mat=jnp.multiply(dr_mat,jnp.multiply(K_Aa,K_Mm_Xx))
+        first_term_vec=1/n_te * first_term_mat.sum(axis=1).reshape(-1,1)
+
+        second_term_mat = (jnp.multiply(p_a0_x_reciprocal_mat,
+                                           (jnp.multiply(K_Api,K_Mm_Xx)-jnp.multiply(jnp.multiply(K_Api,mu_m_a0x),K_Xx))))
+        second_term_vec=1/n_te * second_term_mat.sum(axis=1).reshape(-1,1)
+
+        third_term_mat=jnp.multiply(jnp.multiply(K_Aa,mu_m_a0x),K_Xx)
+        third_term_vec=1/n_te * third_term_mat.sum(axis=1).reshape(-1,1)
+
+        EIF_estimate=jnp.linalg.solve((K_AA_MM_XX+lambda_y*jnp.eye(n_tr)),second_term_vec+third_term_vec-first_term_vec)
+
     else:
-        third_term_mat=R1@jnp.multiply(jnp.multiply(K_Aa,mu_m_a0x),K_Xx)
-    third_term_v2=1/n_te * third_term_mat.sum(axis=1).reshape(-1,1)
+        K_AA_XX=jnp.multiply(K_AA,K_XX)
+        K_AA_MM_XX=jnp.multiply(K_AA_XX,K_MM)
+        #R1=jnp.linalg.inv(K_AA_MM_XX+lambda_y*jnp.eye(n_tr))
+        
+        mu_m_a0x=K_MM@jnp.linalg.inv(K_AA_XX+lambda_m*jnp.eye(n_tr))@jnp.multiply(K_Aa0,K_Xx)
+        K_Mm_Xx=jnp.multiply(K_Xx,K_Mm)
+        first_term_mat=jnp.multiply(dr_mat,jnp.multiply(K_Aa,K_Mm_Xx))
+        first_term_vec=1/n_te * first_term_mat.sum(axis=1).reshape(-1,1)
+
+        second_term_mat = (jnp.multiply(p_a0_x_reciprocal_mat,
+                                           (jnp.multiply(K_Api,K_Mm_Xx)-jnp.multiply(jnp.multiply(K_Api,mu_m_a0x),K_Xx))))
+        second_term_vec=1/n_te * second_term_mat.sum(axis=1).reshape(-1,1)
+
+        third_term_mat=jnp.multiply(jnp.multiply(K_Aa,mu_m_a0x),K_Xx)
+        third_term_vec=1/n_te * third_term_mat.sum(axis=1).reshape(-1,1)
+
+        EIF_estimate=jnp.linalg.solve((K_AA_MM_XX+lambda_y*jnp.eye(n_tr)),second_term_vec+third_term_vec-first_term_vec)
     
-    EIF_estimate=second_term_v2+third_term_v2-first_term_v2
+    
 
     return dr_array/n_te,EIF_estimate
 
@@ -214,15 +235,7 @@ def compute_plugin_a0(A_tr:Array,
 
     #learn propensity and density ratio functions
     a_x =estimate_propensity(np.array(A_tr),np.array(X_tr),method=x_method)
-    if explicit_m or explicit_y:
-        m_ax = estimate_propensity(np.array(M_tr),np.concatenate((np.array(A_tr),np.array(X_tr)),axis=1),method=x_method)
-        a0_vec=a0*jnp.ones(A_tr.shape)
-        p_m_a0x_array=jnp.array(m_ax.predict_proba(np.concatenate((np.array(a0_vec),np.array(X_tr)),axis=1)))
-    
-    if explicit_m:
-        K_M1=M_kernel.make_distance_matrix(M_tr,jnp.array([[1.]]))
-        K_M0=M_kernel.make_distance_matrix(M_tr,jnp.array([[0.]]))
-        
+
     #a_mx = estimate_propensity(np.array(A_tr),np.concatenate((np.array(X_tr),np.array(M_tr)),axis=1))
     
     K_A1=A_kernel.make_distance_matrix(A_tr,jnp.array([[1.]]))
@@ -238,14 +251,11 @@ def compute_plugin_a0(A_tr:Array,
     K_Api=jnp.outer(K_A1,p_a_x_array[:,1])+jnp.outer(K_A0,p_a_x_array[:,0])
     #K_Api=K_AA@np.linalg.inv(K_XX+n_tr*lambda_a*np.eye(n_tr))@K_XX
 
-    R1=jnp.linalg.inv(K_AA_MM_XX+lambda_y*jnp.eye(n_tr))
-    
-    if explicit_m:
-        mu_m_a0x=jnp.outer(K_M1,p_m_a0x_array[:,1])+jnp.outer(K_M0,p_m_a0x_array[:,0])
-    else:
-        mu_m_a0x=K_MM@jnp.linalg.inv(K_AA_XX+lambda_m*jnp.eye(n_tr))@jnp.multiply(K_Aa0,K_XX)
-    
     if explicit_y:
+        m_ax = estimate_propensity(np.array(M_tr),np.concatenate((np.array(A_tr),np.array(X_tr)),axis=1),method=x_method)
+        a0_vec=a0*jnp.ones(A_tr.shape)
+        p_m_a0x_array=jnp.array(m_ax.predict_proba(np.concatenate((np.array(a0_vec),np.array(X_tr)),axis=1)))
+
         embedder=mu_y_amx()
         embedder.train(jnp.concatenate((A_tr,M_tr,X_tr),axis=1))
         mu_y_11x=embedder.predict(jnp.concatenate((jnp.ones(A_tr.shape),jnp.ones(M_tr.shape),X_tr),axis=1))
@@ -259,16 +269,40 @@ def compute_plugin_a0(A_tr:Array,
         p_1_a0x_mat = jnp.tile(p_m_a0x_array[:,1],(n_tr,1))
         p_0_a0x_mat = jnp.tile(p_m_a0x_array[:,0],(n_tr,1))
 
-        second_term_mat = (jnp.multiply(mu_y_11x,jnp.multiply(p_1_a0x_mat,p_1_x_mat)) + 
+        plugin_mat = (jnp.multiply(mu_y_11x,jnp.multiply(p_1_a0x_mat,p_1_x_mat)) + 
                           jnp.multiply(mu_y_10x,jnp.multiply(p_0_a0x_mat,p_1_x_mat)) + 
                           jnp.multiply(mu_y_01x,jnp.multiply(p_1_a0x_mat,p_0_x_mat)) + 
                           jnp.multiply(mu_y_00x,jnp.multiply(p_0_a0x_mat,p_0_x_mat)))
-        
-    else:
-        second_term_mat= R1@jnp.multiply(jnp.multiply(K_Api,mu_m_a0x),K_XX)
-    second_term_v2=1/n_tr * second_term_mat.sum(axis=1).reshape(-1,1)
 
-    return second_term_v2
+        plugin=1/n_tr * plugin_mat.sum(axis=1).reshape(-1,1)
+
+    elif explicit_m:
+        m_ax = estimate_propensity(np.array(M_tr),np.concatenate((np.array(A_tr),np.array(X_tr)),axis=1),method=x_method)
+        a0_vec=a0*jnp.ones(A_tr.shape)
+        p_m_a0x_array=jnp.array(m_ax.predict_proba(np.concatenate((np.array(a0_vec),np.array(X_tr)),axis=1)))
+        
+        K_M1=M_kernel.make_distance_matrix(M_tr,jnp.array([[1.]]))
+        K_M0=M_kernel.make_distance_matrix(M_tr,jnp.array([[0.]]))
+        
+        #R1=jnp.linalg.inv(K_AA_MM_XX+lambda_y*jnp.eye(n_tr))
+
+        mu_m_a0x=jnp.outer(K_M1,p_m_a0x_array[:,1])+jnp.outer(K_M0,p_m_a0x_array[:,0])
+
+        plugin_mat= jnp.multiply(jnp.multiply(K_Api,mu_m_a0x),K_XX)
+        plugin_vec=1/n_tr * plugin_mat.sum(axis=1).reshape(-1,1)
+
+        plugin=jnp.linalg.solve((K_AA_MM_XX+lambda_y*jnp.eye(n_tr)),plugin_vec)
+
+    else:
+        #R1=jnp.linalg.inv(K_AA_MM_XX+lambda_y*jnp.eye(n_tr))
+        mu_m_a0x=K_MM@jnp.linalg.inv(K_AA_XX+lambda_m*jnp.eye(n_tr))@jnp.multiply(K_Aa0,K_XX)
+        
+        plugin_mat= jnp.multiply(jnp.multiply(K_Api,mu_m_a0x),K_XX)
+        plugin_vec=1/n_tr * plugin_mat.sum(axis=1).reshape(-1,1)
+    
+        plugin=jnp.linalg.solve((K_AA_MM_XX+lambda_y*jnp.eye(n_tr)),plugin_vec)
+        
+    return plugin
 
 def MMD(X:Array,
         Y:Array):
