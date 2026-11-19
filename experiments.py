@@ -48,7 +48,7 @@ def run_convergence_experiment(DGP,
 
     if params is None:
         print('Learning hyperparameters')
-        params=learn_hyperparams(A,M,X,Y,subsample=subsample)
+        params=learn_hyperparams(A_tr,M_tr,X_tr,Y_tr,subsample=subsample)
 
     dr,EIF = compute_EIF_a0(A_tr,M_tr,X_tr,Y_tr,A_te,M_te,X_te,Y_te,a0=treatment,x_method=x_method,mx_method=mx_method,params=params,explicit_m=m, explicit_y=y)
     div_dr = jnp.sqrt(MMD_dr(Y_te,Y_tr,Y_truth,EIF,dr))
