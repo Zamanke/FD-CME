@@ -294,10 +294,10 @@ def MMD_plugin(Y_tr:Array,
     K_tr_tr = kernel.make_distance_matrix(Y_tr, Y_tr)
     K_tr_te = kernel.make_distance_matrix(Y_tr,Y_truth)
     K_te_te = kernel.make_distance_matrix(Y_truth, Y_truth)
-    first_term = (plugin_estimate.T @ K_tr_tr @ plugin_estimate)
-    second_term = (plugin_estimate.T @ K_tr_te) + (K_tr_te.T @ plugin_estimate)
-    third_term = (K_te_te)
-    return first_term.mean() - second_term.mean() + third_term.mean()
+    first_term = (plugin_estimate.T @ K_tr_tr @ plugin_estimate).mean()
+    second_term = (plugin_estimate.T @ K_tr_te).mean() + (K_tr_te.T @ plugin_estimate).mean()
+    third_term = (K_te_te).mean()
+    return first_term - second_term + third_term
     
 def MMD_dr(Y_te:Array,
            Y_tr:Array,
@@ -315,10 +315,10 @@ def MMD_dr(Y_te:Array,
     K_truth_truth = kernel.make_distance_matrix(Y_truth,Y_truth)
     K_tr_truth=kernel.make_distance_matrix(Y_tr,Y_truth)
     K_te_truth=kernel.make_distance_matrix(Y_te,Y_truth)
-    first_term = EIF_estimate.T @ K_tr_tr @ EIF_estimate + dr.T @ K_te_te @ dr + EIF_estimate.T @ K_tr_te @ dr + dr.T @ K_tr_te.T @ EIF_estimate
-    second_term = dr.T @ K_te_truth + K_te_truth.T @ dr + EIF_estimate.T @ K_tr_truth + K_tr_truth.T @ EIF_estimate
-    third_term = K_truth_truth
-    return first_term.mean() - second_term.mean() + third_term.mean()
+    first_term = (EIF_estimate.T @ K_tr_tr @ EIF_estimate).mean() + (dr.T @ K_te_te @ dr).mean() + (EIF_estimate.T @ K_tr_te @ dr).mean() + (dr.T @ K_tr_te.T @ EIF_estimate).mean()
+    second_term = (dr.T @ K_te_truth).mean() + (K_te_truth.T @ dr).mean() + (EIF_estimate.T @ K_tr_truth).mean() + (K_tr_truth.T @ EIF_estimate).mean()
+    third_term = K_truth_truth.mean()
+    return first_term - second_term + third_term
 
 def KTE(A_1,M_1,X_1,Y_1,A_2,M_2,X_2,Y_2,x_method='logistic',mx_method='logistic',subsample=True,params=None):
     """computes the test statistic from the doubly robust kernel treatment effects test"""
