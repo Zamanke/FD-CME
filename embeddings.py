@@ -21,7 +21,8 @@ def compute_EIF_a0(A_tr:Array,
                    mx_method:str='logistic',
                    params=None, 
                    explicit_m:bool=False, 
-                   explicit_y:bool=False):
+                   explicit_y:bool=False,
+                   n_rate:Scalar=1):
     """compute the one-step estimator for the counterfactual mean embedding under the front door criterion.
     We can't write the mean embedding in closed form as the feature map is infinite-dimensional, so instead we calculate
     two terms which, combined with the kernels on the training and test outcomes, can then be used to evalue MMDs, sample from the
@@ -43,6 +44,8 @@ def compute_EIF_a0(A_tr:Array,
         lambda_m,lambda_y,sigma_A,sigma_M,sigma_X=learn_hyperparams(A_tr,M_tr,X_tr,Y_tr,subsample=subsample)
     elif params is not None:
         lambda_m,lambda_y,sigma_A,sigma_M,sigma_X=params
+
+    lambda_y = n_tr ** (1-n_rate) * lambda_y
 
     A_kernel = gaussian_kernel(sigma_A)
     M_kernel = gaussian_kernel(sigma_M)
@@ -200,7 +203,8 @@ def compute_plugin_a0(A_tr:Array,
                       x_method:str='logistic',
                       params=None,
                       explicit_m:bool=False,
-                      explicit_y:bool=False):
+                      explicit_y:bool=False,
+                      n_rate:Scalar=1):
     """compute the plug-in estimator for the counterfactual mean embedding under the front door criterion.
     We can't write the mean embedding in closed form as the feature map is infinite-dimensional, so instead we calculate
     a term which, combined with the kernel on the training outcomes, can then be used to evalue MMDs, sample from the
@@ -222,6 +226,8 @@ def compute_plugin_a0(A_tr:Array,
         lambda_m,lambda_y,sigma_A,sigma_M,sigma_X=learn_hyperparams(A_tr,M_tr,X_tr,Y_tr,subsample=subsample)
     elif params is not None:
         lambda_m,lambda_y,sigma_A,sigma_M,sigma_X=params
+
+    lambda_y = n_tr ** (1-n_rate) * lambda_y
 
     A_kernel = gaussian_kernel(sigma_A)
     K_AA=A_kernel.make_distance_matrix(A_tr,A_tr)
